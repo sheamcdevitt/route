@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model to store user information
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  routes    Route[]
+}
+
+// Route model to store custom running routes
+model Route {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  distance    Float        // in kilometers
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  coordinates Coordinate[]
+  routeTimes  RouteTime[]
+}
+
+// Coordinate model to store route path coordinates
+model Coordinate {
+  id        String   @id @default(uuid())
+  latitude  Float
+  longitude Float
+  order     Int      // To maintain the order of coordinates in a route
+  routeId   String
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([routeId, order])
+}
+
+// TrainingLocation model to store nearby training locations
+model TrainingLocation {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  latitude    Float
+  longitude   Float
+  address     String?
+  type        String   // e.g., "track", "trail", "gym", "event"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// RouteTime model to store time and pace information for routes
+model RouteTime {
+  id        String   @id @default(uuid())
+  routeId   String
+  route     Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  time      Int      // in seconds
+  pace      Float?   // calculated pace in minutes per kilometer
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
