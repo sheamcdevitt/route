@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { calculateDistance } from '../utils/routeCalculations';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
 
 type TrainingLocation = {
   id: string;
@@ -70,60 +72,51 @@ const NearbyLocations = ({
         .sort((a, b) => (a.distance || 0) - (b.distance || 0))
     : locations;
 
-  if (loading) {
-    return (
-      <div className='bg-white p-6 rounded-lg shadow-md'>
-        <h2 className='text-2xl font-bold mb-4'>Nearby Training Locations</h2>
-        <p className='text-gray-600'>Loading locations...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className='bg-white p-6 rounded-lg shadow-md'>
-        <h2 className='text-2xl font-bold mb-4'>Nearby Training Locations</h2>
-        <p className='text-red-500'>{error}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <h2 className='text-2xl font-bold mb-4'>Nearby Training Locations</h2>
-
-      {nearbyLocations.length > 0 ? (
-        <div className='space-y-4'>
-          {nearbyLocations.map((location) => (
-            <div key={location.id} className='border-b pb-4'>
-              <h3 className='text-lg font-medium'>{location.name}</h3>
-              {location.description && (
-                <p className='text-gray-600 mt-1'>{location.description}</p>
-              )}
-              <div className='mt-2 flex flex-wrap gap-2'>
-                <span className='inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded'>
-                  {location.type}
-                </span>
-                {location.distance !== undefined && (
-                  <span className='inline-block px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded'>
-                    {location.distance.toFixed(2)} km away
-                  </span>
+    <Card>
+      <CardHeader>
+        <CardTitle>Nearby Training Locations</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p className='text-muted-foreground'>Loading locations...</p>
+        ) : error ? (
+          <p className='text-destructive'>{error}</p>
+        ) : nearbyLocations.length > 0 ? (
+          <div className='space-y-4'>
+            {nearbyLocations.map((location) => (
+              <div key={location.id} className='border-b pb-4'>
+                <h3 className='text-lg font-medium'>{location.name}</h3>
+                {location.description && (
+                  <p className='text-muted-foreground mt-1'>
+                    {location.description}
+                  </p>
+                )}
+                <div className='mt-2 flex flex-wrap gap-2'>
+                  <Badge variant='secondary'>{location.type}</Badge>
+                  {location.distance !== undefined && (
+                    <Badge variant='outline'>
+                      {location.distance.toFixed(2)} km away
+                    </Badge>
+                  )}
+                </div>
+                {location.address && (
+                  <p className='text-muted-foreground text-sm mt-1'>
+                    {location.address}
+                  </p>
                 )}
               </div>
-              {location.address && (
-                <p className='text-gray-500 text-sm mt-1'>{location.address}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className='text-gray-600'>
-          {userLocation
-            ? 'No training locations found nearby.'
-            : 'Share your location to find nearby training spots.'}
-        </p>
-      )}
-    </div>
+            ))}
+          </div>
+        ) : (
+          <p className='text-muted-foreground'>
+            {userLocation
+              ? 'No training locations found nearby.'
+              : 'Share your location to find nearby training spots.'}
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

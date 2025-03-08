@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import { usePaceCalculator } from '../hooks/usePaceCalculator';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { Label } from './ui/label';
+import { Input } from './ui/input';
 
 type PaceCalculatorProps = {
   distance: number;
@@ -46,94 +51,94 @@ const PaceCalculator = ({ distance }: PaceCalculatorProps) => {
   };
 
   return (
-    <div className='bg-white p-6 rounded-lg shadow-md'>
-      <h2 className='text-2xl font-bold mb-4'>Pace Calculator</h2>
-
-      {distance > 0 ? (
-        <>
-          <div className='mb-4'>
-            <p className='text-lg font-medium'>
-              Distance: {distance.toFixed(2)} km
-            </p>
-          </div>
-
-          <div className='mb-4'>
-            <label className='block text-sm font-medium text-gray-700 mb-1'>
-              Calculate:
-            </label>
-            <div className='flex gap-4'>
-              <label className='inline-flex items-center'>
-                <input
-                  type='radio'
-                  className='form-radio'
-                  name='calculationType'
-                  value='time'
-                  checked={calculationType === 'time'}
-                  onChange={() => setCalculationType('time')}
-                />
-                <span className='ml-2'>Time</span>
-              </label>
-              <label className='inline-flex items-center'>
-                <input
-                  type='radio'
-                  className='form-radio'
-                  name='calculationType'
-                  value='pace'
-                  checked={calculationType === 'pace'}
-                  onChange={() => setCalculationType('pace')}
-                />
-                <span className='ml-2'>Pace</span>
-              </label>
-            </div>
-          </div>
-
-          {calculationType === 'time' ? (
+    <Card>
+      <CardHeader>
+        <CardTitle>Pace Calculator</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {distance > 0 ? (
+          <>
             <div className='mb-4'>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Pace (min:sec/km):
-              </label>
-              <input
-                type='text'
-                className='w-full p-2 border border-gray-300 rounded-md'
-                placeholder='5:30/km'
-                value={formattedPace}
-                onChange={handlePaceChange}
-              />
+              <p className='text-lg font-medium'>
+                Distance: {distance.toFixed(2)} km
+              </p>
             </div>
-          ) : (
+
             <div className='mb-4'>
-              <label className='block text-sm font-medium text-gray-700 mb-1'>
-                Time (hh:mm:ss):
-              </label>
-              <input
-                type='text'
-                className='w-full p-2 border border-gray-300 rounded-md'
-                placeholder='00:30:00'
-                value={formattedTime}
-                onChange={handleTimeChange}
-              />
+              <Label className='block text-sm font-medium mb-1'>
+                Calculate:
+              </Label>
+              <RadioGroup
+                defaultValue={calculationType}
+                onValueChange={(value) =>
+                  setCalculationType(value as 'time' | 'pace')
+                }
+                className='flex gap-4'
+              >
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='time' id='time' />
+                  <Label htmlFor='time'>Time</Label>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='pace' id='pace' />
+                  <Label htmlFor='pace'>Pace</Label>
+                </div>
+              </RadioGroup>
             </div>
-          )}
 
-          <button
-            onClick={handleCalculate}
-            className='w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md font-medium'
-          >
-            Calculate {calculationType === 'time' ? 'Time' : 'Pace'}
-          </button>
+            {calculationType === 'time' ? (
+              <div className='mb-4'>
+                <Label
+                  htmlFor='pace-input'
+                  className='block text-sm font-medium mb-1'
+                >
+                  Pace (min:sec/km):
+                </Label>
+                <Input
+                  id='pace-input'
+                  type='text'
+                  className='w-full'
+                  placeholder='5:30/km'
+                  value={formattedPace}
+                  onChange={handlePaceChange}
+                />
+              </div>
+            ) : (
+              <div className='mb-4'>
+                <Label
+                  htmlFor='time-input'
+                  className='block text-sm font-medium mb-1'
+                >
+                  Time (hh:mm:ss):
+                </Label>
+                <Input
+                  id='time-input'
+                  type='text'
+                  className='w-full'
+                  placeholder='00:30:00'
+                  value={formattedTime}
+                  onChange={handleTimeChange}
+                />
+              </div>
+            )}
 
-          <div className='mt-4 p-4 bg-gray-100 rounded-md'>
-            <h3 className='text-lg font-medium mb-2'>Results:</h3>
-            <p>Time: {formattedTime}</p>
-            <p>Pace: {formattedPace}</p>
-          </div>
-        </>
-      ) : (
-        <p className='text-gray-600'>
-          Draw a route on the map to calculate pace and time.
-        </p>
-      )}
-    </div>
+            <Button onClick={handleCalculate} className='w-full'>
+              Calculate {calculationType === 'time' ? 'Time' : 'Pace'}
+            </Button>
+
+            <div className='mt-4 p-4 bg-muted rounded-md'>
+              <h3 className='text-lg font-medium mb-2'>Results:</h3>
+              <p>Time: {formattedTime}</p>
+              <p>Pace: {formattedPace}</p>
+            </div>
+          </>
+        ) : (
+          <p className='text-muted-foreground'>
+            Draw a route on the map to calculate pace and time.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 

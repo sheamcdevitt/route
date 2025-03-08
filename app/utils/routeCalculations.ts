@@ -112,3 +112,88 @@ export const calculateRouteDistance = (
 
   return totalDistance;
 };
+
+/**
+ * Calculates a real route between two points using Google Maps Directions API
+ * @param origin - Starting point coordinates {lat, lng}
+ * @param destination - Ending point coordinates {lat, lng}
+ * @param waypoints - Optional intermediate waypoints
+ * @param travelMode - Travel mode (WALKING, BICYCLING, etc.)
+ * @returns Promise that resolves to route details
+ */
+export const calculateRealRoute = async (
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number },
+  waypoints: { lat: number; lng: number }[] = [],
+  travelMode: google.maps.TravelMode = google.maps.TravelMode.WALKING
+): Promise<{
+  path: google.maps.LatLng[];
+  distance: number;
+  duration: number;
+}> => {
+  return new Promise((resolve, reject) => {
+    if (!window.google || !window.google.maps) {
+      reject(new Error('Google Maps API not loaded'));
+      return;
+    }
+
+    const directionsService = new google.maps.DirectionsService();
+
+    const formattedWaypoints = waypoints.map((point) => ({
+      location: new google.maps.LatLng(point.lat, point.lng),
+      stopover: false,
+    }));
+
+    directionsService.route(
+      {
+        origin: new google.maps.LatLng(origin.lat, origin.lng),
+        destination: new google.maps.LatLng(destination.lat, destination.lng),
+        waypoints: formattedWaypoints,
+        travelMode: travelMode,
+        optimizeWaypoints: false,
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK && result) {
+          // Extract the path from the route
+          const route = result.routes[0];
+          const path: google.maps.LatLng[] = [];
+
+          // Get all points along the path
+          const legs = route.legs;
+          for (const leg of legs) {
+            for (const step of leg.steps) {
+              for (const point of step.path) {
+                path.push(point);
+              }
+            }
+          }
+
+          // Calculate total distance in kilometers
+          let distance = 0;
+          for (const leg of legs) {
+            if (leg.distance) {
+              distance += leg.distance.value;
+            }
+          }
+          distance = distance / 1000; // Convert meters to kilometers
+
+          // Calculate total duration in seconds
+          let duration = 0;
+          for (const leg of legs) {
+            if (leg.duration) {
+              duration += leg.duration.value;
+            }
+          }
+
+          resolve({
+            path,
+            distance,
+            duration,
+          });
+        } else {
+          reject(new Error(`Directions request failed: ${status}`));
+        }
+      }
+    );
+  });
+};
